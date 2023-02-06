@@ -1,0 +1,24 @@
+{
+    "parserOptions": {
+        "ecmaVersion": 2020
+    },
+    "env": {
+        "es2021": true
+    },
+    "ignorePatterns": [
+        "!src/**/*.{ts,js}",
+        "node_modules"
+    ],
+    "root": true,
+    "extends": [
+        "./.eslint/node.eslintrc.json",
+        "./.eslint/smile-style.eslintrc.json",
+        "./.eslint/unicorn.eslintrc.json",
+        "./.eslint/ordered-imports.eslintrc.json5",
+        "./.eslint/typescript.eslintrc.json",
+        "./.eslint/prettier.eslintrc.json"
+    ],
+    "rules": {
+        "consistent-return": "off"
+    }
+}
