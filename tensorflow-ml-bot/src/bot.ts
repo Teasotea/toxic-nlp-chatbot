@@ -3,25 +3,43 @@ import dotenv from 'dotenv';
 import { Bot } from 'grammy';
 import type { UserFromGetMe } from 'grammy/out/types';
 
+// eslint-disable-next-line import/no-unresolved
+import { initSwindlersTensorService } from './services';
+
 dotenv.config();
 
 // eslint-disable-next-line no-void
 void (async () => {
-    // Create an instance of the `Bot` class and pass your authentication token to it.
-    const bot = new Bot(process.env.BOT_TOKEN!); // <-- put your authentication token between the ""
+    const { swindlersTensorService } = initSwindlersTensorService();
+
+    const bot = new Bot(process.env.BOT_TOKEN!);
+
+    // bot.use(trainingChatMenu);
 
     // You can now register listeners on your bot object `bot`.
     // grammY will call the listeners when users send messages to your bot.
 
-    // Handle the /start command.
-    bot.command('start', (context) => context.reply('Welcome! Up and running.'));
-    // Handle other messages.
-    bot.on('message', (context) => context.reply('Got another message!'));
+    bot.command('start', (context) => {
+        console.info(context);
+        return context.reply('🧙‍ Дороу! Летс окультурювати вас, токсична спільното!');
+    });
 
-    // Now that you specified how to handle messages, you can start your bot.
-    // This will connect to the Telegram servers and wait for messages.
+    bot.on('message', async (context) => {
+        const predictedResult = swindlersTensorService.predict(context.msg.text || '');
 
-    // Start the bot.
+        if (predictedResult.score >= 0.85) {
+            console.info('ok');
+            await context.deleteMessage();
+            await context.reply(`@${context.msg.from.username as string} заспокійся, бо забанимо! 👿`);
+        } else if (predictedResult.score > 0.75) {
+            console.info('ok');
+            await context.reply('Воу! Шо почалося!', {
+                reply_to_message_id: context.msg.message_id,
+                // reply_markup: trainingChatMenu,
+            });
+        }
+    });
+
     await bot.start({
         onStart: () => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -30,4 +48,6 @@ void (async () => {
             console.info(`Bot @${botInfo.username} started!`, new Date().toString());
         },
     });
-})();
+})().catch(() => {
+    console.error('Bot has been stopped!');
+});
