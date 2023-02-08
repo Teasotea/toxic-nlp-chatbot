@@ -3,8 +3,10 @@ import dotenv from 'dotenv';
 import { Bot } from 'grammy';
 import type { UserFromGetMe } from 'grammy/out/types';
 
+// import { trainingChatComposer } from './composer';
 // eslint-disable-next-line import/no-unresolved
 import { initSwindlersTensorService } from './services';
+import { initTrainingChatComposer } from './composer';
 
 dotenv.config();
 
@@ -14,6 +16,10 @@ void (async () => {
 
     const bot = new Bot(process.env.BOT_TOKEN!);
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // const trainingChatMenu = new Menu();
+    //
     // bot.use(trainingChatMenu);
 
     // You can now register listeners on your bot object `bot`.
@@ -23,6 +29,12 @@ void (async () => {
         console.info(context);
         return context.reply('🧙‍ Дороу! Летс окультурювати вас, токсична спільното!');
     });
+
+    const { trainingChatComposer, trainingChatMenu } = initTrainingChatComposer(swindlersTensorService);
+
+    bot.use(trainingChatMenu);
+
+    bot.use(trainingChatComposer);
 
     bot.on('message', async (context) => {
         const predictedResult = swindlersTensorService.predict(context.msg.text || '');
