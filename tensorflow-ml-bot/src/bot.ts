@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import { Bot } from 'grammy';
 import type { UserFromGetMe } from 'grammy/out/types';
 
+import { initMessageComposer } from './composer';
+// import { trainingChatComposer } from './composer';
 // eslint-disable-next-line import/no-unresolved
 import { initSwindlersTensorService } from './services';
 
@@ -14,32 +16,22 @@ void (async () => {
 
     const bot = new Bot(process.env.BOT_TOKEN!);
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // const trainingChatMenu = new Menu();
+    //
     // bot.use(trainingChatMenu);
 
-    // You can now register listeners on your bot object `bot`.
-    // grammY will call the listeners when users send messages to your bot.
-
     bot.command('start', (context) => {
-        console.info(context);
         return context.reply('🧙‍ Дороу! Летс окультурювати вас, токсична спільното!');
     });
-    // filtering chat types for groups and supergroups to separate logic from private chat
-    bot.filter((context) => context.chat?.type == 'supergroup' || context.chat?.type == 'group').on('message', async (context) => {
-        const predictedResult = swindlersTensorService.predict(context.msg.text || '');
 
-        if (predictedResult.score >= 0.85) {
-            console.info('ok');
-            await context.deleteMessage();
-            await context.reply(`@${context.msg.from.username as string} заспокійся, бо забанимо! 👿`);
-        } else if (predictedResult.score > 0.75) {
-            console.info('ok');
-            await context.reply('Воу! Шо почалося!', {
-                reply_to_message_id: context.msg.message_id,
-                // reply_markup: trainingChatMenu,
-            });
-        }
-    });
-    // filtering chat types for groups and supergroups to separate logic from group chat
+    const { composer, messageMenu } = initMessageComposer(swindlersTensorService);
+
+    bot.use(messageMenu);
+
+    bot.use(composer);
+
     bot.filter((context) => context.chat?.type == 'private').on('message', async (context) => {
         const predictedResult = swindlersTensorService.predict(context.msg.text || '');
 
@@ -50,6 +42,20 @@ void (async () => {
             console.info('ok');
             await context.reply(`@${context.msg.from.username as string} не лайся, бо я тобі в вічі плюну, — говорила баба Кайдашиха 😤`);
         }
+    });
+
+    bot.on('poll', (context) => {
+        // context.msg?.reply_to_message;
+        // const options = context.poll?.options;
+        // const totalVoterCount = context.poll?.total_voter_count;
+        // const yesOption = options?.filter((option) => option.text === 'yes');
+        // const shouldRemove = yesOption?.at(0).voter_count / totalVoterCount;
+        // if (shouldRemove > 10) {
+        //     context
+        // }
+        // TODO take username from text and ban user
+        console.info(context.poll?.options);
+        console.info();
     });
 
     await bot.start({

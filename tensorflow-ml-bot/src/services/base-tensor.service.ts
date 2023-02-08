@@ -14,7 +14,7 @@ export class BaseTensorService {
         console.info(message);
         return {
             isOffensive: true,
-            score: 0.9,
+            score: 0.8,
         };
     }
 }
