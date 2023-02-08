@@ -1,1 +1,1 @@
-export * from './training-chat.composer';
+export * from './message.composer';
