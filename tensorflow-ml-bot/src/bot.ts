@@ -37,6 +37,9 @@ void (async () => {
     bot.use(trainingChatComposer);
 
     bot.on('message', async (context) => {
+
+    // filtering chat types for groups and supergroups to separate logic from private chat
+    bot.filter((context) => context.chat?.type == 'supergroup' || context.chat?.type == 'group').on('message', async (context) => {
         const predictedResult = swindlersTensorService.predict(context.msg.text || '');
 
         if (predictedResult.score >= 0.85) {
@@ -49,6 +52,18 @@ void (async () => {
                 reply_to_message_id: context.msg.message_id,
                 // reply_markup: trainingChatMenu,
             });
+        }
+    });
+    // filtering chat types for groups and supergroups to separate logic from group chat
+    bot.filter((context) => context.chat?.type == 'private').on('message', async (context) => {
+        const predictedResult = swindlersTensorService.predict(context.msg.text || '');
+
+        if (predictedResult.score >= 0.85) {
+            console.info('ok');
+            await context.reply(`@${context.msg.from.username as string} та ти реально токсік 🤢, за таке й не гріх забанити ❌`);
+        } else if (predictedResult.score > 0.75) {
+            console.info('ok');
+            await context.reply(`@${context.msg.from.username as string} не лайся, бо я тобі в вічі плюну, — говорила баба Кайдашиха 😤`);
         }
     });
 
