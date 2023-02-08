@@ -1,0 +1,2 @@
+uk-stemmer==1.0
+openai
