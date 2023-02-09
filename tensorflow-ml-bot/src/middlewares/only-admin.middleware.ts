@@ -21,7 +21,6 @@ export const onlyAdmin = async (context: CommandContext<Context>, next: NextFunc
     const chatMember = await context.getChatMember(context.from.id);
     console.info(chatMember);
     if (adminStatuses.has(chatMember.status)) {
-        console.info('ok, its admin');
         return next();
     }
     console.info(context, 'User is neither admin nor regular');

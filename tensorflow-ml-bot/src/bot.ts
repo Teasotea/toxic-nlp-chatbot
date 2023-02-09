@@ -3,8 +3,8 @@ import dotenv from 'dotenv';
 import { Bot, MemorySessionStorage, session } from 'grammy';
 import type { UserFromGetMe } from 'grammy/out/types';
 
-import { createInitialSessionData, initStartComposer, MyContext } from './composers';
-import { initMessageComposer } from './composers';
+import type { MyContext } from './composers';
+import { createInitialSessionData, initMessageComposer, initStartComposer } from './composers';
 import { onlyAdmin } from './middlewares';
 // eslint-disable-next-line import/no-unresolved
 import { initSwindlersTensorService } from './services';
@@ -27,7 +27,11 @@ void (async () => {
     bot.use(startMenu);
     bot.use(startComposer);
 
-    bot.command('start', (context) => context.reply('🧙‍ Дороу! Летс окультурювати вас, токсична спільното!'));
+    bot.command('start', (context) => {
+        console.info('start command performed.');
+        return context.reply('🧙‍ Дороу! Летс окультурювати вас, токсична спільното!');
+        // TODO check if bot has enough permissions
+    });
 
     bot.command(
         'report',
@@ -43,6 +47,15 @@ void (async () => {
                 console.info(`@${from.username as string} was banned.`);
                 await context.banChatMember(from.id);
             }
+        },
+    );
+
+    bot.command(
+        'unban',
+        async (context, next) => onlyAdmin(context, next),
+        async (context) => {
+            console.info(context.msg.text);
+            return context.reply('ok, unbanned.');
         },
     );
 

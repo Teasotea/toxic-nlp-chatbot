@@ -53,18 +53,9 @@ export class BaseTensorService {
                     isToxic: 1 - data[1] > this.threshold,
                 } as TensorResult),
         ) as Promise<TensorResult>;
-
-        // predict(message: string) {
-        //     console.info(message);
-        //     return {
-        //         isOffensive: true,
-        //         score: 0.8,
-        //     };
-        // }
     }
 
     tokenize(message: string) {
-        // Always start with the START token.
         const returnArray = [this.DICTIONARY_EXTRAS.START];
 
         const wordArray = optimizeText(message)
@@ -73,23 +64,17 @@ export class BaseTensorService {
 
         let index = 0;
 
-        // Loop through the words in the sentence you want to encode.
-        // If word is found in dictionary, add that number else
-        // you add the UNKNOWN token.
         wordArray.forEach((word) => {
             const encoding = this.VOCAB.indexOf(word);
             returnArray.push(encoding === -1 ? this.DICTIONARY_EXTRAS.UNKNOWN : encoding);
             index += 1;
         });
 
-        // Finally if the number of words was < the minimum encoding length
-        // minus 1 (due to the start token), fill the rest with PAD tokens.
         while (index < this.modelLength - 1) {
             returnArray.push(this.DICTIONARY_EXTRAS.PAD);
             index += 1;
         }
 
-        // Convert to a TensorFlow Tensor and return that.
         return tf.tensor([returnArray]);
     }
 }

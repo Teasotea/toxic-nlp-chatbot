@@ -40,8 +40,7 @@ export const initStartComposer = () => {
         async (context) => {
             if (context.session.isConfigured) {
                 await context.reply('Бот уже налаштований');
-                // TO DO
-                // Ask user if he wants to reconfigure
+                // TODO Ask user if he wants to reconfigure
             } else {
                 await context.reply('Виберіть налаштування', { reply_markup: startMenu });
                 context.session.chatID = context.chat.id.toString();
