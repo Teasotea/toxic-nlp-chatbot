@@ -1,11 +1,11 @@
 import * as process from 'node:process';
 import dotenv from 'dotenv';
-import { Bot } from 'grammy';
+import { Bot, MemorySessionStorage, session } from 'grammy';
 import type { UserFromGetMe } from 'grammy/out/types';
 
+import { createInitialSessionData, initStartComposer, MyContext } from './composers';
 import { initMessageComposer } from './composers';
 import { onlyAdmin } from './middlewares';
-// import { trainingChatComposer } from './composers';
 // eslint-disable-next-line import/no-unresolved
 import { initSwindlersTensorService } from './services';
 
@@ -14,8 +14,18 @@ dotenv.config();
 // eslint-disable-next-line no-void
 void (async () => {
     const { swindlersTensorService } = await initSwindlersTensorService();
+    const { startComposer, startMenu } = initStartComposer();
 
-    const bot = new Bot(process.env.BOT_TOKEN!);
+    const bot = new Bot<MyContext>(process.env.BOT_TOKEN!);
+
+    bot.use(
+        session({
+            initial: createInitialSessionData,
+            storage: new MemorySessionStorage(), // also the default value
+        }),
+    );
+    bot.use(startMenu);
+    bot.use(startComposer);
 
     bot.command('start', (context) => context.reply('🧙‍ Дороу! Летс окультурювати вас, токсична спільното!'));
 
