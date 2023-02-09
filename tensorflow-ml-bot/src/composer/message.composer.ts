@@ -45,9 +45,8 @@ export const initMessageComposer = (swindlersTensorService: SwindlersTensorServi
         .row()
         .text('⛔️ все ровно', messageButtonHandler(false));
 
-    const composer = messageComposer.filter((context) => context.chat?.type !== 'private');
-
-    composer.on('message', async (context, next) => {
+    const groupComposer = messageComposer.filter((context) => context.chat?.type !== 'private');
+    groupComposer.on('message', async (context, next) => {
         // eslint-disable-next-line camelcase
         const { text, message_id } = context.msg;
 
@@ -78,6 +77,18 @@ export const initMessageComposer = (swindlersTensorService: SwindlersTensorServi
                 reply_markup: messageMenu,
             });
         }
+    });
+
+    const privateComposer = messageComposer.filter((context) => context.chat?.type === 'private');
+    privateComposer.on('message', async (context) => {
+        // eslint-disable-next-line camelcase
+        const { text, message_id } = context.msg;
+        const { score, isToxic } = await swindlersTensorService.predict(text || '');
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        await context.reply(`Score: ${score} \nisToxic: ${isToxic}`, {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,camelcase
+            reply_to_message_id: message_id,
+        });
     });
 
     return { messageComposer, messageMenu };

@@ -34,7 +34,7 @@ void (async () => {
     //     }
     // });
 
-    bot.on('poll', (context) => {
+    bot.filter((context) => context.chat?.type !== 'private').on('poll', (context) => {
         // context.msg?.reply_to_message;
         const options = context.poll?.options;
         const totalVoterCount: number = context.poll?.total_voter_count;
