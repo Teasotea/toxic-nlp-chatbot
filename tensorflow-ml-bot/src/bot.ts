@@ -3,10 +3,10 @@ import dotenv from 'dotenv';
 import { Bot, MemorySessionStorage, session } from 'grammy';
 import type { UserFromGetMe } from 'grammy/out/types';
 
+import { initMuteComposer } from './composers/mute.composer';
 import type { MyContext } from './composers';
 import { createInitialSessionData, initMessageComposer, initStartComposer } from './composers';
 import { onlyAdmin } from './middlewares';
-// eslint-disable-next-line import/no-unresolved
 import { initSwindlersTensorService } from './services';
 
 dotenv.config();
@@ -14,9 +14,13 @@ dotenv.config();
 // eslint-disable-next-line no-void
 void (async () => {
     const { swindlersTensorService } = await initSwindlersTensorService();
-    const { startComposer, startMenu } = initStartComposer();
 
     const bot = new Bot<MyContext>(process.env.BOT_TOKEN!);
+
+    /**
+     * START MENU logic
+     */
+    const { startComposer, startMenu } = initStartComposer();
 
     bot.use(
         session({
@@ -26,13 +30,14 @@ void (async () => {
     );
     bot.use(startMenu);
     bot.use(startComposer);
-
-    bot.command('start', (context) => {
-        console.info('start command performed.');
-        return context.reply('🧙‍ Дороу! Летс окультурювати вас, токсична спільното!');
-        // TODO check if bot has enough permissions
-    });
-
+    /**
+     * MUTE command logic
+     */
+    const { muteComposer } = initMuteComposer();
+    bot.use(muteComposer);
+    /**
+     * REPORT command logic
+     */
     bot.command(
         'report',
         async (context, next) => onlyAdmin(context, next),
@@ -50,6 +55,9 @@ void (async () => {
         },
     );
 
+    /**
+     * UNBAN command logic
+     */
     bot.command(
         'unban',
         async (context, next) => onlyAdmin(context, next),
@@ -63,6 +71,9 @@ void (async () => {
     bot.use(messageMenu);
     bot.use(messageComposer);
 
+    /**
+     * POLL events logic
+     */
     bot.on('poll', (context) => {
         const options = context.poll?.options;
         const totalVoterCount: number = context.poll?.total_voter_count;
@@ -77,10 +88,16 @@ void (async () => {
         }
     });
 
+    /**
+     * ERROR HANDLING
+     */
     bot.catch((error) => {
         console.error(error);
     });
 
+    /**
+     * APPLICATION START
+     */
     await bot.start({
         onStart: () => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
