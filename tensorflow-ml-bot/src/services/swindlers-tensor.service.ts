@@ -7,9 +7,9 @@ export class SwindlersTensorService extends BaseTensorService {
     }
 }
 
-export const initSwindlersTensorService = /* async*/ () => {
+export const initSwindlersTensorService = async () => {
     const swindlersTensorService = new SwindlersTensorService();
-    // await swindlersTensorService.loadModel();
+    await swindlersTensorService.loadModel();
 
     return { swindlersTensorService };
 };

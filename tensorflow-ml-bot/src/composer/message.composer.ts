@@ -16,10 +16,11 @@ export const initMessageComposer = (swindlersTensorService: SwindlersTensorServi
         // eslint-disable-next-line camelcase
         const { text, message_id } = context.msg.reply_to_message;
 
-        await context.api.deleteMessage(context.chat.id, message_id);
         await context.deleteMessage();
-
-        await context.reply(`${text || ''}\nYou pressed ${isOffensive.toString()}`);
+        if (isOffensive) {
+            await context.api.deleteMessage(context.chat.id, message_id);
+            await context.reply(`Message "${text as string}" was deleted because хтось токсична гнида.`);
+        }
     };
     // eslint-disable-next-line unicorn/consistent-function-scoping
     const pollButtonHandler = () => async (context: Context, next: NextFunction) => {
@@ -38,13 +39,13 @@ export const initMessageComposer = (swindlersTensorService: SwindlersTensorServi
     };
 
     const messageMenu = new Menu('my-menu-identifier')
-        .text('✅ Offensive', messageButtonHandler(true))
+        .text('✅ Toxic detected 😎', messageButtonHandler(true))
         .row()
         .text('👨‍⚖️ lets vote, dudes', pollButtonHandler())
         .row()
-        .text('⛔️ Not offensive', messageButtonHandler(false));
+        .text('⛔️ все ровно', messageButtonHandler(false));
 
-    const composer = messageComposer.filter((context) => context.chat?.type === 'supergroup' || context.chat?.type === 'group');
+    const composer = messageComposer.filter((context) => context.chat?.type !== 'private');
 
     composer.on('message', async (context, next) => {
         // eslint-disable-next-line camelcase
@@ -54,14 +55,22 @@ export const initMessageComposer = (swindlersTensorService: SwindlersTensorServi
             await context.deleteMessage();
             return next();
         }
-        const predictedResult = swindlersTensorService.predict(text || '');
+        const predictedResult = await swindlersTensorService.predict(text || '');
+        console.info(predictedResult.score);
 
-        if (predictedResult.score >= 0.85) {
-            console.info('ok');
+        if (predictedResult.score >= 0.9) {
             await context.deleteMessage();
-            await context.reply(`@${context.msg.from.username as string} заспокійся, бо забанимо! 👿`);
-        } else if (predictedResult.score > 0.75) {
-            await context.reply(`ok, ${predictedResult.score}`, {
+            await context.reply(`score: ${predictedResult.score}, message: ${text} @${context.msg.from.username as string} заспокійся, бо забанимо! 👿`);
+        } else if (predictedResult.score > 0.5) {
+            await context.reply(`${predictedResult.score} нуууу куда, нормально ж спілкувалися...`, {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,camelcase
+                reply_to_message_id: message_id,
+                reply_markup: messageMenu,
+            });
+            // await context.deleteMessage();
+            // await context.reply('Ваше повідомлення видалено, бо ви токсік, ідіть поплачте 👿');
+        } else {
+            await context.reply(`${predictedResult.score}`, {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,camelcase
                 reply_to_message_id: message_id,
                 reply_markup: messageMenu,

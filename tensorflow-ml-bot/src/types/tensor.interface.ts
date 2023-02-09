@@ -1,4 +1,4 @@
 export interface TensorResult {
-    spamRate: number;
-    isSpam: boolean;
+    score: number;
+    isToxic: boolean;
 }

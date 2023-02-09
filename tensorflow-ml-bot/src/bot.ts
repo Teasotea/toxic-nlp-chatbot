@@ -12,48 +12,47 @@ dotenv.config();
 
 // eslint-disable-next-line no-void
 void (async () => {
-    const { swindlersTensorService } = initSwindlersTensorService();
+    const { swindlersTensorService } = await initSwindlersTensorService();
 
     const bot = new Bot(process.env.BOT_TOKEN!);
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    // const trainingChatMenu = new Menu();
-    //
-    // bot.use(trainingChatMenu);
-
     bot.command('start', (context) => context.reply('🧙‍ Дороу! Летс окультурювати вас, токсична спільното!'));
 
-    const { messageComposer, messageMenu } = initMessageComposer(swindlersTensorService);
-
+    const { composer, messageMenu } = initMessageComposer(swindlersTensorService);
     bot.use(messageMenu);
+    bot.use(composer);
 
-    bot.use(messageComposer);
-
-    bot.filter((context) => context.chat?.type === 'private').on('message', async (context) => {
-        const predictedResult = swindlersTensorService.predict(context.msg.text || '');
-
-        if (predictedResult.score >= 0.85) {
-            console.info('ok');
-            await context.reply(`@${context.msg.from.username as string} та ти реально токсік 🤢, за таке й не гріх забанити ❌`);
-        } else if (predictedResult.score > 0.75) {
-            console.info('ok');
-            await context.reply(`@${context.msg.from.username as string} не лайся, бо я тобі в вічі плюну, — говорила баба Кайдашиха 😤`);
-        }
-    });
+    // bot.filter((context) => context.chat?.type !== 'private').on('message', async (context) => {
+    //     const predictedResult = await swindlersTensorService.predict(context.msg.text || '');
+    //
+    //     if (predictedResult.score >= 0.85) {
+    //         console.info('ok');
+    //         await context.reply(`@${context.msg.from.username as string} та ти реально токсік 🤢, за таке й не гріх забанити ❌`);
+    //     } else if (predictedResult.score > 0.75) {
+    //         console.info('ok');
+    //         await context.reply(`@${context.msg.from.username as string} не лайся, бо я тобі в вічі плюну, — говорила баба Кайдашиха 😤`);
+    //     }
+    // });
 
     bot.on('poll', (context) => {
         // context.msg?.reply_to_message;
-        // const options = context.poll?.options;
-        // const totalVoterCount = context.poll?.total_voter_count;
-        // const yesOption = options?.filter((option) => option.text === 'yes');
-        // const shouldRemove = yesOption?.at(0).voter_count / totalVoterCount;
-        // if (shouldRemove > 10) {
-        //     context
-        // }
+        const options = context.poll?.options;
+        const totalVoterCount: number = context.poll?.total_voter_count;
+        // const yesOption = options?.find((option) => option.text === 'yes');
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const yesOptionNumber: number = options.at(0)?.voter_count;
+        const shouldRemove = yesOptionNumber / totalVoterCount;
+        if (shouldRemove > 0.1) {
+            // context.banChatMember(context.msg?.reply_to_message)
+
+            console.info(context.poll.question);
+        }
         // TODO take username from text and ban user
-        console.info(context.poll?.options);
-        console.info();
+    });
+
+    bot.catch((error) => {
+        console.error(error);
     });
 
     await bot.start({
