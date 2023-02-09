@@ -32,9 +32,13 @@ export const initMessageComposer = (swindlersTensorService: SwindlersTensorServi
 
         await context.api.deleteMessage(context.chat.id, message_id);
 
-        await context.replyWithPoll(`should we ban @${from?.username as string} for '${text as string}'?`, ['yes', 'no', 'Slava Ukraini'], {
-            open_period: 5,
-        });
+        await context.replyWithPoll(
+            `should we ban id=[${from?.id as number}] username=@${from?.username as string} for '${text as string}'?`,
+            ['yes', 'no', 'Slava Ukraini'],
+            {
+                open_period: 5,
+            },
+        );
         await context.deleteMessage();
     };
 
@@ -60,14 +64,21 @@ export const initMessageComposer = (swindlersTensorService: SwindlersTensorServi
         if (predictedResult.score >= 0.9) {
             await context.deleteMessage();
             await context.reply(
-                `score: ${predictedResult.score}, message: ${text} @${context.msg.from.username as string} заспокійся, бо забанимо! 👿`,
+                `score: ${predictedResult.score}, message: ${text} @${
+                    context.msg.from.username as string
+                } та ти реально токсік 🤢, за таке й не гріх забанити ❌ \nЗаспокійся трішки`,
             );
         } else if (predictedResult.score > 0.5) {
-            await context.reply(`${predictedResult.score} нуууу куда, нормально ж спілкувалися...`, {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,camelcase
-                reply_to_message_id: message_id,
-                reply_markup: messageMenu,
-            });
+            await context.reply(
+                `${predictedResult.score} @${
+                    context.msg.from.username as string
+                } не лайся, бо я тобі в вічі плюну, — говорила баба Кайдашиха 😤\``,
+                {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,camelcase
+                    reply_to_message_id: message_id,
+                    reply_markup: messageMenu,
+                },
+            );
             // await context.deleteMessage();
             // await context.reply('Ваше повідомлення видалено, бо ви токсік, ідіть поплачте 👿');
         } else {
