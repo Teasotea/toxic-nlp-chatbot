@@ -22,17 +22,15 @@ void (async () => {
     //
     // bot.use(trainingChatMenu);
 
-    bot.command('start', (context) => {
-        return context.reply('🧙‍ Дороу! Летс окультурювати вас, токсична спільното!');
-    });
+    bot.command('start', (context) => context.reply('🧙‍ Дороу! Летс окультурювати вас, токсична спільното!'));
 
-    const { composer, messageMenu } = initMessageComposer(swindlersTensorService);
+    const { messageComposer, messageMenu } = initMessageComposer(swindlersTensorService);
 
     bot.use(messageMenu);
 
-    bot.use(composer);
+    bot.use(messageComposer);
 
-    bot.filter((context) => context.chat?.type == 'private').on('message', async (context) => {
+    bot.filter((context) => context.chat?.type === 'private').on('message', async (context) => {
         const predictedResult = swindlersTensorService.predict(context.msg.text || '');
 
         if (predictedResult.score >= 0.85) {

@@ -69,5 +69,5 @@ export const initMessageComposer = (swindlersTensorService: SwindlersTensorServi
         }
     });
 
-    return { composer, messageMenu };
+    return { messageComposer, messageMenu };
 };
