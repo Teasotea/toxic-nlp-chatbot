@@ -60,7 +60,9 @@ export const initMessageComposer = (swindlersTensorService: SwindlersTensorServi
 
         if (predictedResult.score >= 0.9) {
             await context.deleteMessage();
-            await context.reply(`score: ${predictedResult.score}, message: ${text} @${context.msg.from.username as string} заспокійся, бо забанимо! 👿`);
+            await context.reply(
+                `score: ${predictedResult.score}, message: ${text} @${context.msg.from.username as string} заспокійся, бо забанимо! 👿`,
+            );
         } else if (predictedResult.score > 0.5) {
             await context.reply(`${predictedResult.score} нуууу куда, нормально ж спілкувалися...`, {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,camelcase
