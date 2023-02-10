@@ -10,6 +10,6 @@ export const banUserMiddleware = async (context: MyContext) => {
         console.info('from was not defined.');
         return;
     }
-    console.info(`@${from.username as string} was banned.`);
     await context.banChatMember(from.id);
+    await context.reply(`@${from.username as string} was banned.`);
 };

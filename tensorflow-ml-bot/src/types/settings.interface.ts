@@ -10,4 +10,5 @@ export interface StartSettings {
     chatType: string;
     action: ActionType;
     isConfigured: boolean;
+    usersStats: Map<string, number>;
 }

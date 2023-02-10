@@ -27,6 +27,7 @@ void (async () => {
             storage,
         }),
     );
+
     const { swindlersTensorService } = await initSwindlersTensorService();
     const { strategyDelegatorService } = initStrategyDelegatorService();
 
@@ -44,9 +45,11 @@ void (async () => {
      */
     bot.command(
         'finish',
+        async (context, next) => botActivatedMiddleware(context, next),
         async (context, next) => onlyAdmin(context, next),
         async (context) => {
             context.session.isConfigured = false;
+            context.session.usersStats = new Map<string, number>();
             await context.reply('як скажеш, цвіль. але ви без мене тут просто пропадете...');
         },
     );
@@ -60,8 +63,8 @@ void (async () => {
      */
     bot.command(
         'report',
-        async (context, next) => onlyAdmin(context, next),
         async (context, next) => botActivatedMiddleware(context, next),
+        async (context, next) => onlyAdmin(context, next),
         async (context) => {
             if (!context.msg || context.msg.reply_to_message === undefined) {
                 await context.reply('You can use /report as reply to toxic/offensive message.');
@@ -77,8 +80,12 @@ void (async () => {
      */
     bot.command(
         'unban',
+        async (context, next) => botActivatedMiddleware(context, next),
         async (context, next) => onlyAdmin(context, next),
         async (context) => {
+            // const username = context.match;
+            // const chatId = context.msg.chat.id;
+            // await context.api.unbanChatMember(chatId, )
             console.info(context.msg.text);
             return context.reply('ok, unbanned.');
         },

@@ -2,6 +2,7 @@ import { Menu } from '@grammyjs/menu';
 import type { NextFunction } from 'grammy';
 import { Composer } from 'grammy';
 
+import {botActivatedMiddleware, onlyAdmin} from '../middlewares';
 import type { SwindlersTensorService } from '../services';
 import type { StrategyDelegatorService } from '../services/on-message/strategy-delegator.service';
 
@@ -52,20 +53,25 @@ export const initMessageComposer = (swindlersTensorService: SwindlersTensorServi
         .text('👨‍⚖️ lets vote, dudes', pollButtonHandler());
 
     const groupComposer = messageComposer.filter((context) => context.chat?.type !== 'private');
-    groupComposer.on('message', async (context, next) => {
-        // eslint-disable-next-line camelcase
-        const { text } = context.msg;
+    groupComposer.on(
+        'message',
+        async (context: MyContext, next: NextFunction) => botActivatedMiddleware(context, next),
+        async (context: MyContext, next: NextFunction) => onlyAdmin(context, next),
+        async (context: MyContext, next: NextFunction) => {
+            // eslint-disable-next-line camelcase
+            const { text } = context.msg!;
 
-        if (!text || text.startsWith('/')) {
-            await context.deleteMessage();
-            return next();
-        }
-        const predictedResult = await swindlersTensorService.predict(text || '');
-        console.info(`Predicted result: ${predictedResult.score}, Text: ${text}`);
+            if (!text || text.startsWith('/')) {
+                await context.deleteMessage();
+                return next();
+            }
+            const predictedResult = await swindlersTensorService.predict(text || '');
+            console.info(`Predicted result: ${predictedResult.score}, Text: ${text}`);
 
-        const actionType = context.session.action;
-        await strategyDelegator.performStrategy(context, actionType, predictedResult, messageMenu);
-    });
+            const actionType = context.session.action;
+            await strategyDelegator.performStrategy(context, actionType, predictedResult, messageMenu);
+        },
+    );
 
     const privateComposer = messageComposer.filter((context) => context.chat?.type === 'private');
     privateComposer.on('message', async (context) => {

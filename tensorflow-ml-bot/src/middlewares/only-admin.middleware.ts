@@ -1,7 +1,9 @@
 import type { Chat, ChatMember } from '@grammyjs/types/manage';
-import type { CommandContext, Context, NextFunction } from 'grammy';
+import type { NextFunction } from 'grammy';
 
-export const onlyAdmin = async (context: CommandContext<Context>, next: NextFunction) => {
+import type { MyContext } from "../composers";
+
+export const onlyAdmin = async (context: MyContext, next: NextFunction) => {
     if (!context.chat) {
         return;
     }
@@ -23,4 +25,5 @@ export const onlyAdmin = async (context: CommandContext<Context>, next: NextFunc
         return next();
     }
     console.info(context, 'User is neither admin nor regular');
+    await context.reply(`@${context.from.username || ''} - you are not admin, sorry :(`);
 };

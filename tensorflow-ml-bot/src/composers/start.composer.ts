@@ -11,6 +11,7 @@ export const createInitialSessionData = () => ({
     chatType: 'private',
     action: ActionType.NOTHING,
     isConfigured: false,
+    usersStats: new Map<string, number>(),
 });
 
 export type MyContext = Context & SessionFlavor<StartSettings>;
@@ -56,6 +57,7 @@ export const initStartComposer = () => {
         context.session.chatID = context.chat.id.toString();
         context.session.chatType = context.chat.type;
         context.session.isConfigured = true;
+        context.session.usersStats = new Map<string, number>();
     };
     const reconfigureButtonHandler = (reconfigure: boolean) => async (context: MyContext, next: NextFunction) => {
         await context.deleteMessage();
@@ -73,6 +75,20 @@ export const initStartComposer = () => {
     groupStartComposer.command(
         'start',
         async (context, next) => onlyAdmin(context, next),
+        async (context, next) => {
+            const admins = await context.getChatAdministrators();
+            const { id } = context.me;
+            let flag = false;
+            admins.forEach((admin) => {
+                if (admin.user.id === id || admin.user.id === id) {
+                    flag = true;
+                }
+            });
+            if (flag) {
+                return next();
+            }
+            await context.reply(`Please give permissions ['Delete Messages', 'Ban Users'] to the bot.`);
+        },
         async (context) => {
             await (context.session.isConfigured
                 ? context.reply('Ви хочете переналаштувати бота? 🤖', { reply_markup: reconfigureMenu })
