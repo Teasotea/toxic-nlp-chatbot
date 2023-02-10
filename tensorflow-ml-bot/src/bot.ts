@@ -1,13 +1,12 @@
 import * as process from 'node:process';
+import { RedisAdapter } from '@grammyjs/storage-redis';
 import dotenv from 'dotenv';
 import { Bot, session } from 'grammy';
 import type { UserFromGetMe } from 'grammy/out/types';
-import { RedisAdapter } from '@grammyjs/storage-redis';
 import IORedis from 'ioredis';
 
-import { initMuteComposer } from './composers/mute.composer';
 import type { MyContext } from './composers';
-import { createInitialSessionData, initMessageComposer, initStartComposer } from './composers';
+import { createInitialSessionData, initMessageComposer, initStartComposer, initMuteComposer } from './composers';
 import { onlyAdmin } from './middlewares';
 import { initSwindlersTensorService } from './services';
 
@@ -16,25 +15,23 @@ dotenv.config();
 // eslint-disable-next-line no-void
 void (async () => {
     const redisInstance = new IORedis(process.env.REDIS_CONNECTION!);
+    const bot = new Bot<MyContext>(process.env.BOT_TOKEN!);
     // create storage
     const storage = new RedisAdapter({ instance: redisInstance });
 
+    bot.use(
+        session({
+            initial: createInitialSessionData,
+            storage,
+        }),
+    );
     const { swindlersTensorService } = await initSwindlersTensorService();
-
-    const bot = new Bot<MyContext>(process.env.BOT_TOKEN!);
 
     /**
      * START MENU logic
      */
     const { startComposer, startMenu, reconfigureMenu } = initStartComposer();
 
-    bot.use(
-        session({
-            initial: createInitialSessionData,
-            storage: storage,
-            // storage: new MemorySessionStorage(), //
-        }),
-    );
     bot.use(startMenu);
     bot.use(reconfigureMenu);
     bot.use(startComposer);
@@ -78,7 +75,6 @@ void (async () => {
     const { messageComposer, messageMenu } = initMessageComposer(swindlersTensorService);
     bot.use(messageMenu);
     bot.use(messageComposer);
-
     /**
      * POLL events logic
      */

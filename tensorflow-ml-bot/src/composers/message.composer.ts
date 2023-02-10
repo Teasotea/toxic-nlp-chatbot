@@ -1,14 +1,15 @@
 import { Menu } from '@grammyjs/menu';
-import type { Context, NextFunction } from 'grammy';
+import type { NextFunction } from 'grammy';
 import { Composer } from 'grammy';
 
 import type { SwindlersTensorService } from '../services';
+import type { MyContext } from "./start.composer";
 
 export const initMessageComposer = (swindlersTensorService: SwindlersTensorService) => {
-    const messageComposer = new Composer();
+    const messageComposer = new Composer<MyContext>();
 
     // eslint-disable-next-line unicorn/consistent-function-scoping
-    const messageButtonHandler = (isOffensive: boolean) => async (context: Context, next: NextFunction) => {
+    const messageButtonHandler = (isOffensive: boolean) => async (context: MyContext, next: NextFunction) => {
         if (!context.msg?.reply_to_message || !context.chat) {
             return next();
         }
@@ -23,7 +24,7 @@ export const initMessageComposer = (swindlersTensorService: SwindlersTensorServi
         }
     };
     // eslint-disable-next-line unicorn/consistent-function-scoping
-    const pollButtonHandler = () => async (context: Context, next: NextFunction) => {
+    const pollButtonHandler = () => async (context: MyContext, next: NextFunction) => {
         if (!context.msg?.reply_to_message || !context.chat) {
             return next();
         }
@@ -42,12 +43,11 @@ export const initMessageComposer = (swindlersTensorService: SwindlersTensorServi
         await context.deleteMessage();
     };
 
-    const messageMenu = new Menu('my-menu-identifier')
+    const messageMenu = new Menu<MyContext>('my-menu-identifier')
         .text('✅ Toxic detected 😎', messageButtonHandler(true))
+        .text('⛔️ все ровно', messageButtonHandler(false))
         .row()
-        .text('👨‍⚖️ lets vote, dudes', pollButtonHandler())
-        .row()
-        .text('⛔️ все ровно', messageButtonHandler(false));
+        .text('👨‍⚖️ lets vote, dudes', pollButtonHandler());
 
     const groupComposer = messageComposer.filter((context) => context.chat?.type !== 'private');
     groupComposer.on('message', async (context, next) => {
@@ -56,6 +56,9 @@ export const initMessageComposer = (swindlersTensorService: SwindlersTensorServi
 
         if (!text) {
             await context.deleteMessage();
+            return next();
+        }
+        if (text.startsWith('/')) {
             return next();
         }
         const predictedResult = await swindlersTensorService.predict(text || '');
@@ -81,13 +84,14 @@ export const initMessageComposer = (swindlersTensorService: SwindlersTensorServi
             );
             // await context.deleteMessage();
             // await context.reply('Ваше повідомлення видалено, бо ви токсік, ідіть поплачте 👿');
-        } else {
-            await context.reply(`${predictedResult.score}`, {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,camelcase
-                reply_to_message_id: message_id,
-                reply_markup: messageMenu,
-            });
         }
+        // else {
+        //     await context.reply(`${predictedResult.score}`, {
+        //         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,camelcase
+        //         reply_to_message_id: message_id,
+        //         reply_markup: messageMenu,
+        //     });
+        // }
     });
 
     const privateComposer = messageComposer.filter((context) => context.chat?.type === 'private');
