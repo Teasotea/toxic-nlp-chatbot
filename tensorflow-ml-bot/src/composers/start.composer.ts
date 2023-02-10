@@ -1,12 +1,17 @@
-import { Menu } from '@grammyjs/menu';
-import type { Context, NextFunction, SessionFlavor } from 'grammy';
-import { Composer } from 'grammy';
+import {Menu} from '@grammyjs/menu';
+import type {Context, NextFunction, SessionFlavor} from 'grammy';
+import {Composer} from 'grammy';
 
-import { onlyAdmin } from '../middlewares';
-import type { StartSettings } from '../types';
-import { ActionType } from '../types';
+import {onlyAdmin} from '../middlewares';
+import type {StartSettings} from '../types';
+import {ActionType} from '../types';
 
-export const createInitialSessionData = () => ({ chatID: '0', chatType: 'private', action: ActionType.NOTHING, isConfigured: false });
+export const createInitialSessionData = () => ({
+    chatID: '0',
+    chatType: 'private',
+    action: ActionType.NOTHING,
+    isConfigured: false,
+});
 
 export type MyContext = Context & SessionFlavor<StartSettings>;
 
@@ -22,6 +27,18 @@ export const initStartComposer = () => {
 
         await context.deleteMessage();
         await context.reply(`Ви вибрали ${actionType.toString()}`);
+        if (actionType === ActionType.POLL) {
+            if (context.chat === undefined || context.msg === undefined) {
+                return;
+            }
+            await context.replyWithPoll(
+                `нумо оберемо налаштування`,
+                ['Залишити токсіків у спокої', 'Видаляти повідомлення', 'Банити після 2 токсичних поідомлень'],
+                {
+                    open_period: 60,
+                },
+            );
+        }
     };
     const startMenu = new Menu<MyContext>('start-menu-identifier')
         .text('Залишити токсіків у спокої', messageButtonHandler(ActionType.NOTHING))

@@ -5,9 +5,10 @@ import { Bot, session } from 'grammy';
 import type { UserFromGetMe } from 'grammy/out/types';
 import IORedis from 'ioredis';
 
+import { initStrategyDelegatorService } from './services/on-message/strategy-delegator.service';
 import type { MyContext } from './composers';
-import { createInitialSessionData, initMessageComposer, initStartComposer, initMuteComposer } from './composers';
-import { onlyAdmin } from './middlewares';
+import { createInitialSessionData, initMessageComposer, initMuteComposer, initStartComposer } from './composers';
+import {botActivatedMiddleware, onlyAdmin} from './middlewares';
 import { initSwindlersTensorService } from './services';
 
 dotenv.config();
@@ -26,6 +27,7 @@ void (async () => {
         }),
     );
     const { swindlersTensorService } = await initSwindlersTensorService();
+    const { strategyDelegatorService } = initStrategyDelegatorService();
 
     /**
      * START MENU logic
@@ -35,6 +37,18 @@ void (async () => {
     bot.use(startMenu);
     bot.use(reconfigureMenu);
     bot.use(startComposer);
+
+    /**
+     * FINISH command logic
+     */
+    bot.command(
+        'finish',
+        async (context, next) => onlyAdmin(context, next),
+        async (context) => {
+            context.session.isConfigured = false;
+            await context.reply('як скажеш, цвіль. але ви без мене тут просто пропадете...');
+        },
+    );
     /**
      * MUTE command logic
      */
@@ -46,6 +60,7 @@ void (async () => {
     bot.command(
         'report',
         async (context, next) => onlyAdmin(context, next),
+        async (context, next) => botActivatedMiddleware(context, next),
         async (context) => {
             if (context.msg.reply_to_message === undefined) {
                 await context.reply('You can use /report as reply to toxic/offensive message.');
@@ -72,7 +87,7 @@ void (async () => {
         },
     );
 
-    const { messageComposer, messageMenu } = initMessageComposer(swindlersTensorService);
+    const { messageComposer, messageMenu } = initMessageComposer(swindlersTensorService, strategyDelegatorService);
     bot.use(messageMenu);
     bot.use(messageComposer);
     /**

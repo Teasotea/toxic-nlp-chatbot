@@ -8,12 +8,6 @@ import { optimizeText } from 'ukrainian-ml-optimizer';
 import type { TensorResult } from '../types';
 
 export class BaseTensorService {
-    private VOCAB: string[] = [];
-
-    private MODEL: ModelArtifacts | null = null;
-
-    private model!: LayersModel;
-
     DICTIONARY_EXTRAS = {
         PAD: 0,
         START: 1,
@@ -21,6 +15,12 @@ export class BaseTensorService {
     };
 
     modelLength = 0;
+
+    private VOCAB: string[] = [];
+
+    private MODEL: ModelArtifacts | null = null;
+
+    private model!: LayersModel;
 
     constructor(public baseUrl: string, public vocabUrl: string, public threshold: number) {}
 
