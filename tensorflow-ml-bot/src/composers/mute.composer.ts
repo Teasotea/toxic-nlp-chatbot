@@ -35,4 +35,3 @@ export const initMuteComposer = () => {
 
     return { muteComposer };
 };
-
