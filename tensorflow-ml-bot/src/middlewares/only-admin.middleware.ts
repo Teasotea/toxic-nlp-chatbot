@@ -19,7 +19,6 @@ export const onlyAdmin = async (context: CommandContext<Context>, next: NextFunc
     const adminStatuses = new Set<ChatMember['status']>(['creator', 'administrator']);
 
     const chatMember = await context.getChatMember(context.from.id);
-    console.info(chatMember);
     if (adminStatuses.has(chatMember.status)) {
         return next();
     }

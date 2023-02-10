@@ -23,13 +23,6 @@ export const initStartComposer = () => {
         await context.deleteMessage();
         await context.reply(`Ви вибрали ${actionType.toString()}`);
     };
-    const reconfigureButtonHandler = (reconfigure: boolean) => async (context: MyContext, next: NextFunction) => {
-        if (!reconfigure) {
-            await context.deleteMessage();
-            return next();
-        }
-        await configureBot(context);
-    };
     const startMenu = new Menu<MyContext>('start-menu-identifier')
         .text('Залишити токсіків у спокої', messageButtonHandler(ActionType.NOTHING))
         .row()
@@ -47,6 +40,13 @@ export const initStartComposer = () => {
         context.session.chatType = context.chat.type;
         context.session.isConfigured = true;
     };
+    const reconfigureButtonHandler = (reconfigure: boolean) => async (context: MyContext, next: NextFunction) => {
+        await context.deleteMessage();
+        if (!reconfigure) {
+            return next();
+        }
+        await configureBot(context);
+    };
     const reconfigureMenu = new Menu<MyContext>('reconfigure-menu-identifier')
         .text('✅ Так', reconfigureButtonHandler(true))
         .text('❌ Ні', reconfigureButtonHandler(false));
@@ -57,11 +57,9 @@ export const initStartComposer = () => {
         'start',
         async (context, next) => onlyAdmin(context, next),
         async (context) => {
-            if (context.session.isConfigured) {
-                await context.reply('Ви хочете переналаштувати бота? 🤖', { reply_markup: reconfigureMenu });
-            } else {
-                await configureBot(context);
-            }
+            await (context.session.isConfigured
+                ? context.reply('Ви хочете переналаштувати бота? 🤖', { reply_markup: reconfigureMenu })
+                : configureBot(context));
         },
     );
 
