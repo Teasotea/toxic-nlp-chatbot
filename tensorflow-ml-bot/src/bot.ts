@@ -1,7 +1,9 @@
 import * as process from 'node:process';
 import dotenv from 'dotenv';
-import { Bot, MemorySessionStorage, session } from 'grammy';
+import { Bot, session } from 'grammy';
 import type { UserFromGetMe } from 'grammy/out/types';
+import { RedisAdapter } from '@grammyjs/storage-redis';
+import IORedis from 'ioredis';
 
 import { initMuteComposer } from './composers/mute.composer';
 import type { MyContext } from './composers';
@@ -13,6 +15,10 @@ dotenv.config();
 
 // eslint-disable-next-line no-void
 void (async () => {
+    const redisInstance = new IORedis(process.env.REDIS_CONNECTION!);
+    // create storage
+    const storage = new RedisAdapter({ instance: redisInstance });
+
     const { swindlersTensorService } = await initSwindlersTensorService();
 
     const bot = new Bot<MyContext>(process.env.BOT_TOKEN!);
@@ -25,7 +31,8 @@ void (async () => {
     bot.use(
         session({
             initial: createInitialSessionData,
-            storage: new MemorySessionStorage(), // also the default value
+            storage: storage,
+            // storage: new MemorySessionStorage(), //
         }),
     );
     bot.use(startMenu);
