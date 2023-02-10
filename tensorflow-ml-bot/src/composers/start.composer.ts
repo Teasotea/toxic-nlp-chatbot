@@ -1,10 +1,10 @@
-import {Menu} from '@grammyjs/menu';
-import type {Context, NextFunction, SessionFlavor} from 'grammy';
-import {Composer} from 'grammy';
+import { Menu } from '@grammyjs/menu';
+import type { Context, NextFunction, SessionFlavor } from 'grammy';
+import { Composer } from 'grammy';
 
-import {onlyAdmin} from '../middlewares';
-import type {StartSettings} from '../types';
-import {ActionType} from '../types';
+import { onlyAdmin } from '../middlewares';
+import type { StartSettings } from '../types';
+import { ActionType } from '../types';
 
 export const createInitialSessionData = () => ({
     chatID: '0',

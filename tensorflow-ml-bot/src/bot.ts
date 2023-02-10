@@ -5,10 +5,11 @@ import { Bot, session } from 'grammy';
 import type { UserFromGetMe } from 'grammy/out/types';
 import IORedis from 'ioredis';
 
+import { banUserMiddleware } from './middlewares/ban-user.middleware';
 import { initStrategyDelegatorService } from './services/on-message/strategy-delegator.service';
 import type { MyContext } from './composers';
 import { createInitialSessionData, initMessageComposer, initMuteComposer, initStartComposer } from './composers';
-import {botActivatedMiddleware, onlyAdmin} from './middlewares';
+import { botActivatedMiddleware, onlyAdmin } from './middlewares';
 import { initSwindlersTensorService } from './services';
 
 dotenv.config();
@@ -62,16 +63,12 @@ void (async () => {
         async (context, next) => onlyAdmin(context, next),
         async (context, next) => botActivatedMiddleware(context, next),
         async (context) => {
-            if (context.msg.reply_to_message === undefined) {
+            if (!context.msg || context.msg.reply_to_message === undefined) {
                 await context.reply('You can use /report as reply to toxic/offensive message.');
+                return;
             }
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion,camelcase
-            const { from } = context.msg.reply_to_message!;
-
-            if (from !== undefined) {
-                console.info(`@${from.username as string} was banned.`);
-                await context.banChatMember(from.id);
-            }
+            await banUserMiddleware(context);
+            await context.deleteMessage();
         },
     );
 
