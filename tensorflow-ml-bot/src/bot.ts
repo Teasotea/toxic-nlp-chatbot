@@ -54,6 +54,19 @@ void (async () => {
         },
     );
     /**
+     * HELP command logic
+     */
+    bot.command('help', async (context) => {
+        await context.reply(
+            '😎\nYou can perform the next commands:\n\n' +
+                '/start - robot will be activated in the chat, write about giving permissions to him\n' +
+                '/help- show list of available commands\n' +
+                '/report - report inappropriate message and ban user (ADMIN)\n' +
+                '/mute - mute user for inappropriate message and ban for a couple of hours (ADMIN)\n' +
+                '/contact- contact customer support.\n',
+        );
+    });
+    /**
      * MUTE command logic
      */
     const { muteComposer } = initMuteComposer();
