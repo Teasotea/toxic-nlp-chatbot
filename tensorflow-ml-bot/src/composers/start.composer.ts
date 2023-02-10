@@ -23,6 +23,13 @@ export const initStartComposer = () => {
         await context.deleteMessage();
         await context.reply(`Ви вибрали ${actionType.toString()}`);
     };
+    const reconfigureButtonHandler = (reconfigure: boolean) => async (context: MyContext, next: NextFunction) => {
+        if (!reconfigure) {
+            await context.deleteMessage();
+            return next();
+        }
+        await configureBot(context);
+    };
     const startMenu = new Menu<MyContext>('start-menu-identifier')
         .text('Залишити токсіків у спокої', messageButtonHandler(ActionType.NOTHING))
         .row()
@@ -31,6 +38,18 @@ export const initStartComposer = () => {
         .text('Банити після 2 токсичних поідомлень', messageButtonHandler(ActionType.BAN))
         .row()
         .text('Vox populi vox Dei, голосуємо', messageButtonHandler(ActionType.POLL));
+    const configureBot = async (context: MyContext) => {
+        await context.reply('Виберіть налаштування', { reply_markup: startMenu });
+        if (!context.chat) {
+            return;
+        }
+        context.session.chatID = context.chat.id.toString();
+        context.session.chatType = context.chat.type;
+        context.session.isConfigured = true;
+    };
+    const reconfigureMenu = new Menu<MyContext>('reconfigure-menu-identifier')
+        .text('✅ Так', reconfigureButtonHandler(true))
+        .text('❌ Ні', reconfigureButtonHandler(false));
 
     const groupStartComposer = startComposer.filter((context) => context.chat?.type !== 'private');
 
@@ -39,16 +58,12 @@ export const initStartComposer = () => {
         async (context, next) => onlyAdmin(context, next),
         async (context) => {
             if (context.session.isConfigured) {
-                await context.reply('Бот уже налаштований');
-                // TODO Ask user if he wants to reconfigure
+                await context.reply('Ви хочете переналаштувати бота? 🤖', { reply_markup: reconfigureMenu });
             } else {
-                await context.reply('Виберіть налаштування', { reply_markup: startMenu });
-                context.session.chatID = context.chat.id.toString();
-                context.session.chatType = context.chat.type;
-                context.session.isConfigured = true;
+                await configureBot(context);
             }
         },
     );
 
-    return { startComposer, startMenu };
+    return { startComposer, startMenu, reconfigureMenu };
 };

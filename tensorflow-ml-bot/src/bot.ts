@@ -20,7 +20,7 @@ void (async () => {
     /**
      * START MENU logic
      */
-    const { startComposer, startMenu } = initStartComposer();
+    const { startComposer, startMenu, reconfigureMenu } = initStartComposer();
 
     bot.use(
         session({
@@ -29,6 +29,7 @@ void (async () => {
         }),
     );
     bot.use(startMenu);
+    bot.use(reconfigureMenu);
     bot.use(startComposer);
     /**
      * MUTE command logic
