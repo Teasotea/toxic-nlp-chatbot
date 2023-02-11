@@ -28,6 +28,13 @@ void (async () => {
         }),
     );
 
+    // bot.command('photo', async (context) => {
+    //     const { id } = context.chat;
+    //     const photo = new InputFile('./shrek.jpeg');
+    //     await bot.api.setChatPhoto(id, photo);
+    //     await bot.api.setChatDescription(id, 'description');
+    // });
+
     const { swindlersTensorService } = await initSwindlersTensorService();
     const { strategyDelegatorService } = initStrategyDelegatorService();
 
@@ -110,7 +117,9 @@ void (async () => {
     /**
      * POLL events logic
      */
-    bot.on('poll', (context) => {
+    bot.on('poll', async (context) => {
+        await context.pinChatMessage(Number(context.poll.id));
+        console.info(context.poll.id);
         const options = context.poll?.options;
         const totalVoterCount: number = context.poll?.total_voter_count;
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -120,7 +129,7 @@ void (async () => {
         if (shouldRemove > 0.1) {
             const question = context.poll.question.toString();
             const userId = question.slice(question.indexOf('['), question.indexOf(']'));
-            console.info(context.banChatMember(Number(userId)));
+            await context.kickChatMember(Number(userId));
         }
     });
 
