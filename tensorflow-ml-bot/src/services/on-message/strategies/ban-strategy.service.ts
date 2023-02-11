@@ -4,6 +4,7 @@ import type { MyContext } from '../../../composers';
 import { banUserMiddleware } from '../../../middlewares/ban-user.middleware';
 import type { TensorResult } from '../../../types';
 import type { ActionHandlerInterface } from '../action-handler.interface';
+import { googleSheetService } from '../../sheet/google-sheet.service';
 
 export class BanStrategyService implements ActionHandlerInterface {
     async handle(context: MyContext, predictedResult: TensorResult, menu?: Menu<MyContext>): Promise<void> {
@@ -12,7 +13,13 @@ export class BanStrategyService implements ActionHandlerInterface {
             return;
         }
         // eslint-disable-next-line camelcase
-        const { message_id } = context.msg;
+        const { text, message_id } = context.msg;
+
+        const range = predictedResult.isToxic ? 'B2:B' : 'A2:A';
+
+        await googleSheetService.appendToSheetSafe('1a8hnDONCDw6-beeXiKiC0JpWhdkeDhltB-7n850VoyA', 'TOXICS', range, text || '');
+
+
         if (predictedResult.score >= 0.9) {
             const { username } = context.msg.from;
             if (!username) {

@@ -1,9 +1,9 @@
 import * as process from 'node:process';
 import { RedisAdapter } from '@grammyjs/storage-redis';
-import dotenv from 'dotenv';
 import { Bot, session } from 'grammy';
 import type { UserFromGetMe } from 'grammy/out/types';
 import IORedis from 'ioredis';
+import { googleSheetService } from './services/sheet/google-sheet.service';
 
 import { banUserMiddleware } from './middlewares/ban-user.middleware';
 import { initStrategyDelegatorService } from './services/on-message/strategy-delegator.service';
@@ -12,14 +12,15 @@ import { createInitialSessionData, initMessageComposer, initMuteComposer, initSt
 import { botActivatedMiddleware, onlyAdmin } from './middlewares';
 import { initSwindlersTensorService } from './services';
 
-dotenv.config();
-
 // eslint-disable-next-line no-void
 void (async () => {
     const redisInstance = new IORedis(process.env.REDIS_CONNECTION!);
     const bot = new Bot<MyContext>(process.env.BOT_TOKEN!);
     // create storage
     const storage = new RedisAdapter({ instance: redisInstance });
+
+    // eslint-disable-next-line no-void
+    void googleSheetService.getSheet('1a8hnDONCDw6-beeXiKiC0JpWhdkeDhltB-7n850VoyA', 'TOXICS', 'A2:A').then(console.info);
 
     bot.use(
         session({
@@ -151,6 +152,7 @@ void (async () => {
             console.info(`Bot @${botInfo.username} started!`, new Date().toString());
         },
     });
-})().catch(() => {
+})().catch((error) => {
+    console.error(error);
     console.error('Bot has been stopped!');
 });
