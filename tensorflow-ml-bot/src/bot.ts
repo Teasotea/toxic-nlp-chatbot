@@ -75,6 +75,22 @@ void (async () => {
         );
     });
     /**
+     * CONTACT command logic
+     */
+    bot.command(
+        'contact',
+        async (context, next) => botActivatedMiddleware(context, next),
+        async (context) => {
+            await context.reply(
+                '😎\nYou can write us:\n\n' +
+                    '@proc1v_n - Назар\n' +
+                    '@katia_boguslavska - Катя\n' +
+                    '@tea_sotea - Соня\n' +
+                    '@Di_chiK - Діма\n',
+            );
+        },
+    );
+    /**
      * MUTE command logic
      */
     const { muteComposer } = initMuteComposer();
@@ -95,7 +111,6 @@ void (async () => {
             await context.deleteMessage();
         },
     );
-
     /**
      * UNBAN command logic
      */

@@ -19,7 +19,6 @@ export class BanStrategyService implements ActionHandlerInterface {
 
         await googleSheetService.appendToSheetSafe('1a8hnDONCDw6-beeXiKiC0JpWhdkeDhltB-7n850VoyA', 'TOXICS', range, text || '');
 
-
         if (predictedResult.score >= 0.9) {
             const { username } = context.msg.from;
             if (!username) {
@@ -45,7 +44,7 @@ export class BanStrategyService implements ActionHandlerInterface {
                 console.info(context.session.usersStats);
             }
             await context.deleteMessage();
-        } else if (predictedResult.score > 0.5 && menu) {
+        } else if (predictedResult.score > 0.7 && menu) {
             await context.reply(
                 `${predictedResult.score} @${
                     context.msg.from.username as string
@@ -59,5 +58,9 @@ export class BanStrategyService implements ActionHandlerInterface {
             // await context.deleteMessage();
             // await context.reply('Ваше повідомлення видалено, бо ви токсік, ідіть поплачте 👿');
         }
+        // await context.reply(`text: ${text || ''}, score: ${predictedResult.score}, token: ${predictedResult.token}`, {
+        //     // eslint-disable-next-line camelcase
+        //     reply_to_message_id: message_id,
+        // });
     }
 }

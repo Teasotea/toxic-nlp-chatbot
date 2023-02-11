@@ -2,7 +2,7 @@ import { Menu } from '@grammyjs/menu';
 import type { NextFunction } from 'grammy';
 import { Composer } from 'grammy';
 
-import {botActivatedMiddleware, onlyAdmin} from '../middlewares';
+import { botActivatedMiddleware } from '../middlewares';
 import type { SwindlersTensorService } from '../services';
 import type { StrategyDelegatorService } from '../services/on-message/strategy-delegator.service';
 
@@ -56,7 +56,7 @@ export const initMessageComposer = (swindlersTensorService: SwindlersTensorServi
     groupComposer.on(
         'message',
         async (context: MyContext, next: NextFunction) => botActivatedMiddleware(context, next),
-        async (context: MyContext, next: NextFunction) => onlyAdmin(context, next),
+        // async (context: MyContext, next: NextFunction) => onlyAdmin(context, next),
         async (context: MyContext, next: NextFunction) => {
             // eslint-disable-next-line camelcase
             const { text } = context.msg!;

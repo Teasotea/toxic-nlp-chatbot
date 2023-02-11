@@ -43,14 +43,17 @@ export class BaseTensorService {
         const tensor = this.tokenize(message);
         const predict = this.model?.predict(tensor);
 
+        const token = tensor.toString();
+
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
         return predict?.data().then(
             (data: [number, number]) =>
                 ({
-                    score: 1 - data[1],
-                    isToxic: 1 - data[1] > this.threshold,
+                    score: data[1],
+                    isToxic: data[1] > this.threshold,
+                    token,
                 } as TensorResult),
         ) as Promise<TensorResult>;
     }

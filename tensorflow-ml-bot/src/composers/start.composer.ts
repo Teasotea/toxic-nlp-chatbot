@@ -42,13 +42,13 @@ export const initStartComposer = () => {
         }
     };
     const startMenu = new Menu<MyContext>('start-menu-identifier')
-        .text('Залишити токсіків у спокої', messageButtonHandler(ActionType.NOTHING))
+        .text('🥰Залишити токсіків у спокої', messageButtonHandler(ActionType.NOTHING))
         .row()
-        .text('Видаляти повідомлення', messageButtonHandler(ActionType.DELETE))
+        .text('🧐Видаляти повідомлення', messageButtonHandler(ActionType.DELETE))
         .row()
-        .text('Банити після 2 токсичних поідомлень', messageButtonHandler(ActionType.BAN))
+        .text('🤯Банити після 2 токсичних поідомлень', messageButtonHandler(ActionType.BAN))
         .row()
-        .text('Vox populi vox Dei, голосуємо', messageButtonHandler(ActionType.POLL));
+        .text('🥸Vox populi vox Dei, голосуємо', messageButtonHandler(ActionType.POLL));
     const configureBot = async (context: MyContext) => {
         await context.reply('Виберіть налаштування', { reply_markup: startMenu });
         if (!context.chat) {
